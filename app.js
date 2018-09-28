@@ -3,9 +3,16 @@ const express = require("express");
 const path = require("path");
 const logger = require("morgan");
 const bodyParser = require("body-parser");
-
-//db
+//db & model
 const db = require("./lib/db");
+const User = require("./models/User");
+
+//import & set up passport
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 //import session middleware
 const Session = require("express-session");
@@ -46,6 +53,10 @@ app.use(
     saveUninitialized: true
   })
 );
+
+//initialise passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
