@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const logger = require("morgan");
 const bodyParser = require("body-parser");
+const helmet = require("helmet");
 //db & model
 const db = require("./lib/db");
 const User = require("./models/User");
@@ -22,6 +23,7 @@ const store = new MongoDBStore({
   uri: "mongodb://localhost:27017/Authy",
   collection: "sessions"
 });
+
 //routes
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
@@ -46,11 +48,11 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: true,
-      name: "session",
       maxAge: new Date(Date.now() + 3600000 * 24) //expires in 24 hours
     },
+    name: "session",
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: false
   })
 );
 
@@ -58,6 +60,19 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//setup helmet
+app.use(helmet());
+app.use(helmet.hidePoweredBy()); //alternatively app.disable('x-powered-by)
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "https://fonts.googleapis.com/"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"]
+    }
+  })
+);
+app.use(helmet.xssFilter());
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
