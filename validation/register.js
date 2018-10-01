@@ -11,10 +11,10 @@ module.exports = function validateResgisterInfo(data) {
     errors.email = "email required";
   }
   if (Validator.isEmpty(data.password)) {
-    errors.password = "password required";
+    errors.password = "Password required";
   }
   if (Validator.isEmpty(data.password2)) {
-    errors.password2 = "confirmation password required";
+    errors.password2 = "Confirmation password required";
   }
 
   if (!Validator.isLength(data.username, { min: 3 })) {
@@ -25,16 +25,12 @@ module.exports = function validateResgisterInfo(data) {
     errors.email = "Must be a valid email";
   }
   //check password length
-
   if (!Validator.isLength(data.password, { min: 8 })) {
     errors.password = "Password must be at least 8 characters";
   }
-  if (!Validator.isLength(data.password2, { min: 8 })) {
-    errors.password2 = "password2 must be at least 8 characters";
-  }
   //check passwords match
   if (!Validator.equals(data.password, data.password2)) {
-    errors.password2 = "Passwords don't match";
+    errors.password2 = "Passwords must match";
   }
   let isValid;
 
