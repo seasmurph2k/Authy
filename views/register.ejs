@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Auth</title>
+    <link rel="stylesheet" href="/stylesheets/bootstrap.css">
+</head>
+
+<body>
+    <%- include('./partials/navbar') %>
+    <div class="container">
+        <div class="d-flex flex-row justify-content-center">
+            <div class="col-md-6">
+                <form class="form-horizontal" role="form" method="POST" action="/users/register">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <h2>Register New User</h2>
+                            <hr>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 field-label-responsive">
+                            <label for="name">Name</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                                    <input type="text" name="username" class="form-control" id="username" placeholder="John Doe"
+                                        required autofocus>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-control-feedback">
+                                <span class="text-danger align-middle">
+                                    <% if (errors.username){%>
+                                    <span class="text-danger align-middle">
+                                        <i class="fa fa-close">
+                                            <%= errors.username %>
+                                        </i>
+                                    </span>
+                                    <%} %>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 field-label-responsive">
+                            <label for="email">E-Mail Address</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                                    <input type="text" name="email" class="form-control" id="email" placeholder="you@example.com"
+                                        required autofocus>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-control-feedback">
+                                <% if (errors.email){%>
+                                <span class="text-danger align-middle">
+                                    <i class="fa fa-close">
+                                        <%= errors.email %>
+                                    </i>
+                                </span>
+                                <%} %>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 field-label-responsive">
+                            <label for="password">Password</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group has-danger">
+                                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                                    <input type="password" name="password" class="form-control" id="password"
+                                        placeholder="Password" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-control-feedback">
+                                <% if (errors.password){%>
+                                <span class="text-danger align-middle">
+                                    <i class="fa fa-close">
+                                        <%= errors.password %>
+                                    </i>
+                                </span>
+                                <%} %>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 field-label-responsive">
+                            <label for="password">Confirm Password</label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                                    <input type="password" name="password2" class="form-control" id="password-confirm"
+                                        placeholder="Password" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <% if (errors.password2){%>
+                            <span class="text-danger align-middle">
+                                <i class="fa fa-close">
+                                    <%= errors.password2 %>
+                                </i>
+                            </span>
+                            <%} %>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3"></div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-user-plus"></i> Register</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <%- include('partials/footer')%>
