@@ -3,7 +3,9 @@ const router = express.Router();
 const User = require("../models/User");
 const validateUserInput = require("../validation/register");
 const passport = require("passport");
-
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const config = require("../config/config");
 /*
   POST: /users/regsiter
   Desc: Register new user
@@ -24,6 +26,39 @@ router.post(
     } else {
       next();
     }
+  }, //sanitizeation
+  //The following could be extracted in a couple ways
+  (req, res, next) => {
+    //check if username exist
+    User.findOne({ username: req.body.username })
+      .then(user => {
+        if (!user) {
+          next();
+        } else {
+          let errors = { username: "Username already exists" };
+          res.locals.errors = errors;
+          return res.status(400).render("register", {
+            isAuthed: req.isAuthenticated()
+          });
+        }
+      })
+      .catch(err => {});
+  },
+  (req, res, next) => {
+    //check if email exists
+    User.findOne({ email: req.body.email })
+      .then(user => {
+        if (!user) {
+          next();
+        } else {
+          let errors = { email: "Email already exists" };
+          res.locals.errors = errors;
+          return res.status(400).render("register", {
+            isAuthed: req.isAuthenticated()
+          });
+        }
+      })
+      .catch(err => {});
   },
   async (req, res, next) => {
     try {
@@ -42,6 +77,7 @@ router.post(
       res.redirect("/login");
     } catch (error) {
       //add middleware utils to check for existence beforehand.
+      //should never happen now
       if (error.code === 11000) {
         let errmsg = error.errmsg;
         let errors = {};
@@ -79,4 +115,131 @@ router.post(
   }
 );
 
+router.get("/forgot", (req, res, next) => {
+  res.render("forgot");
+});
+/*
+  POST users/reset/
+  Desc:Request a reset token
+  Public:True
+*/
+//todo abstract this
+router.post("/reset", (req, res, next) => {
+  User.findOne({ email: req.body.email })
+    .then(user => {
+      if (!user) {
+        res
+          .status(400)
+          .json({ message: "That email doesn't belong to an account" });
+      } else {
+        //generate token
+        const token = crypto.randomBytes(32).toString("hex");
+
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000;
+        //save in db
+        user
+          .save()
+          .then(result => {
+            //updated user saved in db
+
+            //send mail via nodemailer
+            let transport = nodemailer.createTransport({
+              service: "gmail",
+              auth: {
+                user: config.email.auth.user,
+                pass: config.email.auth.pass
+              }
+            });
+            let mailOptions = {
+              from: config.email.defaultFromAddress,
+              to: user.email,
+              subject: "Test reset",
+              html:
+                '<p>Click <a href="/reset/' +
+                token +
+                '">here</a> to reset password</p>'
+            };
+            transport.sendMail(mailOptions, function(err, info) {
+              if (err) console.log(err);
+              else {
+                res.send(200);
+                console.log(`Mail sent: ${info}`);
+              }
+            });
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
+
+/*
+  GET:/users/reset/:token
+  Desc: Display password form for updating users password
+  Public:False
+*/
+
+router.get("/reset/:token", (req, res, next) => {
+  User.findOne({
+    resetPasswordToken: req.params.token,
+    resetPasswordExpires: { $gt: Date.now() }
+  })
+    .then(user => {
+      if (!user) {
+        //invalid token
+        res.redirect("/");
+      }
+      res.render("reset");
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
+
+/*
+  POST:/users/reset/:token
+  Desc: Resets a users password
+  Public:False
+*/
+
+router.post(
+  "/reset/:token",
+  (req, res, next) => {
+    //ensure passwords match
+    if (req.body.password !== req.body.password2) {
+      //prettify this
+      return res.status(400).json({ password: "passwords don't match" });
+    }
+    next();
+  },
+  async (req, res, next) => {
+    try {
+      let password = req.body.password;
+      let usertoUpdate = await User.findOne({
+        resetPasswordToken: req.params.token,
+        resetPasswordExpires: { $gt: Date.now() }
+      }).exec();
+      //invalid token
+      if (!usertoUpdate) {
+        return res.send("No user found");
+      }
+
+      usertoUpdate.resetPasswordExpires = undefined;
+      usertoUpdate.resetPasswordToken = undefined;
+
+      await usertoUpdate.setPassword(password);
+      await usertoUpdate.save();
+
+      res.redirect("/login");
+    } catch (err) {
+      res.sendStatus(500).json({ err });
+      console.log(err);
+    }
+  }
+);
 module.exports = router;
