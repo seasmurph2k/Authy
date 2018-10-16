@@ -6,6 +6,8 @@ const passport = require("passport");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const config = require("../config/config");
+//validation
+const validateChangePassword = require("../validation/changepassword");
 /*
   POST: /users/regsiter
   Desc: Register new user
@@ -242,4 +244,46 @@ router.post(
     }
   }
 );
+
+router.post(
+  "/changepassword",
+  isAuthenticated,
+  (req, res, next) => {
+    const { errors, isValid } = validateChangePassword(req.body);
+    if (!isValid) {
+      console.log(errors);
+      /* res.json({ errors }); */
+      res.locals.errors = errors;
+      res.status(400).redirect("/profile");
+    } else {
+      next();
+    }
+  },
+  async (req, res, next) => {
+    try {
+      let oldPassword = req.body.oldPassword;
+      let newPassword = req.body.newPassword;
+
+      let user = await User.findOne({
+        email: req.session.passport.user
+      }).exec();
+      //check for user
+      //change password
+      await user.changePassword(oldPassword, newPassword);
+      req.logout();
+      res.status(200).redirect("/login");
+    } catch (error) {
+      if (error.name === "IncorrectPasswordError") {
+        res.locals.errors.password = "Incorrect password";
+        res.status(400).redirect("/profile");
+      }
+      console.log(error);
+      next(error);
+    }
+  }
+);
+
+function isAuthenticated(req, res, next) {
+  req.isAuthenticated() ? next() : res.redirect("/login");
+}
 module.exports = router;
