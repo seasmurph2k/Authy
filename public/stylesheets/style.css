@@ -1,8 +1,7 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+#ourdropdown {
+  width: 20em;
+  margin-left: 5em;
 }
-
-a {
-  color: #00B7FF;
+#ourdropdown button {
+  float: right;
 }

@@ -16,6 +16,18 @@ router.get("/login", isAuthedMiddleware, function(req, res, next) {
     messages: req.session.messages || null
   });
 });
+/* GET profile page */
+router.get("/profile", isAuthenticated, (req, res) => {
+  let username = req.user.username;
+  let signedup = req.user.date;
+  let email = req.user.email;
+  res.render("profile", {
+    username,
+    email,
+    signedup,
+    errors: {}
+  });
+});
 
 /* GET Register page. */
 router.get("/register", isAuthedMiddleware, function(req, res, next) {
@@ -51,4 +63,7 @@ function isAuthedMiddleware(req, res, next) {
   req.isAuthenticated() ? res.redirect("/dashboard") : next();
 }
 
+function isAuthenticated(req, res, next) {
+  req.isAuthenticated() ? next() : res.redirect("/login");
+}
 module.exports = router;
