@@ -68,7 +68,8 @@ app.use(
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "https://fonts.googleapis.com/"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"]
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "https://via.placeholder.com/"]
     }
   })
 );
